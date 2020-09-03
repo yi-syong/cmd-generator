@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from MainUI import Ui_MainWindow
 import sys
+import os.path
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -25,7 +26,6 @@ class MainWindow(QtWidgets.QMainWindow):
         input_folder = QtWidgets.QFileDialog.getExistingDirectory()
         self.ui.textEdit.setText(input_folder)
         self.input_folder = "-i " + input_folder
-        print(self.input_folder)
 
     def select_output_folder(self):
         output_folder = QtWidgets.QFileDialog.getExistingDirectory()
@@ -47,9 +47,32 @@ class MainWindow(QtWidgets.QMainWindow):
             self.cuda = "--device cuda:0"
 
     def generate_cmd(self):
-        cmd = "guppy_basecaller {} {} {} {} {}"\
-            .format(self.input_folder, self.output_folder, self.flowcell, self.kit, self.cuda)
-        self.ui.textEdit_3.setText(cmd)
+        error = self.check()
+        if not error:
+            cmd = "guppy_basecaller {} {} {} {} {}"\
+                .format(self.input_folder, self.output_folder, self.flowcell, self.kit, self.cuda)
+            self.ui.textEdit_3.setText(cmd)
+            self.ui.label_5.setText("")
+        else:
+            self.ui.label_5.setStyleSheet("color: red; font-size:30px")
+            self.ui.label_5.setText(error)
+
+    def check(self):
+        error_list = []
+        error_message = "Please select "
+        if not self.input_folder:
+            error_list.append("input folder")
+        if not self.output_folder:
+            error_list.append("save folder")
+        if not self.flowcell:
+            error_list.append("flowcell")
+        if not self.kit:
+            error_list.append("kit")
+        if not error_list:
+            return
+        else:
+            return error_message + ' ,'.join(error_list)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
