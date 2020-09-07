@@ -9,42 +9,51 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        ## basecalling
         self.ui.pushButton.clicked.connect(self.select_input_folder)
         self.ui.pushButton_2.clicked.connect(self.select_output_folder)
         self.ui.comboBox.currentIndexChanged.connect(self.select_flowcell)
         self.ui.comboBox_2.currentIndexChanged.connect(self.select_kit)
-        self.ui.radioButton.toggled.connect(self.onClicked)
-        self.ui.radioButton_2.toggled.connect(self.onClicked)
+        self.ui.checkBox.stateChanged.connect(self.onClicked)
         self.ui.pushButton_3.clicked.connect(self.generate_cmd)
         self.input_folder = ""
+        self.input_folder_checked = ""
         self.output_folder = ""
+        self.output_folder_checked = ""
         self.flowcell = ""
+        self.flowcell_checked = ""
         self.kit = ""
+        self.kit_checked = ""
         self.cuda = ""
 
+        ## barcoding
+
     def select_input_folder(self):
-        input_folder = QtWidgets.QFileDialog.getExistingDirectory()
-        self.ui.textEdit.setText(input_folder)
-        self.input_folder = "-i " + input_folder
+        self.ui.label_7.setText("")
+        self.input_folder_checked = QtWidgets.QFileDialog.getExistingDirectory()
+        self.ui.textEdit.setText(self.input_folder_checked)
+        self.input_folder = "-i " + self.input_folder_checked
 
     def select_output_folder(self):
-        output_folder = QtWidgets.QFileDialog.getExistingDirectory()
-        self.ui.textEdit_2.setText(output_folder)
-        self.output_folder = "-s " + output_folder
+        self.ui.label_8.setText("")
+        self.output_folder_checked = QtWidgets.QFileDialog.getExistingDirectory()
+        self.ui.textEdit_2.setText(self.output_folder_checked)
+        self.output_folder = "-s " + self.output_folder_checked
 
     def select_flowcell(self):
-        flowcell = self.ui.comboBox.currentText()
-        self.flowcell = "--flowcell " + flowcell
+        self.flowcell_checked = self.ui.comboBox.currentText()
+        self.flowcell = "--flowcell " + self.flowcell_checked
 
     def select_kit(self):
-        kit = self.ui.comboBox_2.currentText()
-        self.kit = "--kit " + kit
+        self.kit_checked = self.ui.comboBox_2.currentText()
+        self.kit = "--kit " + self.kit_checked
 
     def onClicked(self):
-        if self.ui.radioButton.isChecked():
-            self.cuda = ""
-        else:
+        if self.ui.checkBox.isChecked():
             self.cuda = "--device cuda:0"
+        else:
+            self.cuda = ""
 
     def generate_cmd(self):
         error = self.check()
@@ -58,15 +67,26 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.label_5.setText(error)
 
     def check(self):
+        self.ui.textEdit_3.setText("")
         error_list = []
         error_message = "Please select "
-        if not self.input_folder:
+        if not self.input_folder_checked:
             error_list.append("input folder")
-        if not self.output_folder:
+        elif not os.path.isdir(self.ui.textEdit.toPlainText()):
+            error_list.append("input folder")
+            self.ui.label_7.setStyleSheet("color: red")
+            self.ui.label_7.setText("This is not a folder")
+
+        if not self.output_folder_checked:
             error_list.append("save folder")
-        if not self.flowcell:
+        elif not os.path.isdir(self.ui.textEdit_2.toPlainText()):
+            error_list.append("input folder")
+            self.ui.label_8.setStyleSheet("color: red")
+            self.ui.label_8.setText("This is not a folder")
+
+        if not self.flowcell_checked:
             error_list.append("flowcell")
-        if not self.kit:
+        if not self.kit_checked:
             error_list.append("kit")
         if not error_list:
             return
